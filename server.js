@@ -26,11 +26,21 @@ connectDB();
 const app = express();
 
 // Middleware
+// CORS: allow Vercel frontend and localhost (credentials supported)
+const allowedOrigins = [
+  process.env.FRONTEND_URL || 'http://localhost:3000',
+  'https://real-frontend-one.vercel.app'
+];
+
 app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true); // allow server-to-server / curl
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(null, false);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
